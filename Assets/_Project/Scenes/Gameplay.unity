@@ -2602,6 +2602,51 @@ MonoBehaviour:
   targetCharacterText: {fileID: 109697199}
   strokeProgressText: {fileID: 1812856729}
   previewAlpha: 0.25
+--- !u!1 &785659067
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 785659069}
+  - component: {fileID: 785659068}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &785659068
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 785659067}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fff65cb029c6a45bb8c668654729d362, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  autoLoadMainMenuOnBoot: 1
+--- !u!4 &785659069
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 785659067}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &790000197
 GameObject:
   m_ObjectHideFlags: 0
@@ -3900,6 +3945,7 @@ GameObject:
   - component: {fileID: 1418393420}
   - component: {fileID: 1418393419}
   - component: {fileID: 1418393418}
+  - component: {fileID: 1418393424}
   m_Layer: 0
   m_Name: DrawingSurface
   m_TagString: Untagged
@@ -4031,6 +4077,24 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1418393416}
   m_CullTransparentMesh: 1
+--- !u!114 &1418393424
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1418393416}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ba532c88566b4850adc797f043e7ccd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  writingCanvas: {fileID: 1418393419}
+  lineWidth: 8
+  drawingColor: {r: 1, g: 1, b: 1, a: 0.7}
+  matchedColor: {r: 0.2, g: 1, b: 0.4, a: 1}
+  rejectedColor: {r: 1, g: 0.3, b: 0.3, a: 1}
+  segmentSprite: {fileID: 0}
 --- !u!1 &1453430889
 GameObject:
   m_ObjectHideFlags: 0
@@ -5150,6 +5214,7 @@ MonoBehaviour:
   hanziDatabase: {fileID: 0}
   poolRoot: {fileID: 0}
   poolSize: 30
+  debugForceCharacter: 
 --- !u!4 &1935191030
 Transform:
   m_ObjectHideFlags: 0
@@ -5359,3 +5424,4 @@ SceneRoots:
   - {fileID: 1201646125}
   - {fileID: 1307469258}
   - {fileID: 572597076}
+  - {fileID: 785659069}

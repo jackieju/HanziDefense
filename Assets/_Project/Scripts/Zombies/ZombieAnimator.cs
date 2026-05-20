@@ -1,12 +1,8 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace HanziZombieDefense.Zombies
 {
-    /// <summary>
-    /// Thin wrapper that translates <see cref="ZombieState"/> changes into Animator
-    /// triggers/booleans. Animator parameter names are hashed once on Awake to avoid
-    /// per-call string lookups.
-    /// </summary>
     [RequireComponent(typeof(Animator))]
     public class ZombieAnimator : MonoBehaviour
     {
@@ -18,7 +14,11 @@ namespace HanziZombieDefense.Zombies
 
         [SerializeField] private Zombie zombie;
 
+        [Header("Speed Sync")]
+        [SerializeField] private float animationBaseSpeed = 1.5f;
+
         private Animator _animator;
+        private NavMeshAgent _agent;
         private int _spawnHash;
         private int _walkHash;
         private int _attackHash;
@@ -28,6 +28,9 @@ namespace HanziZombieDefense.Zombies
         private void Awake()
         {
             _animator = GetComponent<Animator>();
+            if (_animator == null) _animator = GetComponentInChildren<Animator>();
+            _agent = GetComponent<NavMeshAgent>();
+            if (_agent == null) _agent = GetComponentInParent<NavMeshAgent>();
             if (zombie == null) zombie = GetComponent<Zombie>();
 
             _hasController = _animator != null && _animator.runtimeAnimatorController != null;
@@ -40,12 +43,26 @@ namespace HanziZombieDefense.Zombies
 
         private void OnEnable()
         {
-            if (zombie != null) zombie.StateChanged += HandleStateChanged;
+            if (_animator == null) _animator = GetComponentInChildren<Animator>();
+            _hasController = _animator != null && _animator.runtimeAnimatorController != null;
+            if (zombie != null)
+            {
+                zombie.StateChanged += HandleStateChanged;
+                if (_hasController && zombie.State == ZombieState.Approaching)
+                    PlayWalk();
+            }
         }
 
         private void OnDisable()
         {
             if (zombie != null) zombie.StateChanged -= HandleStateChanged;
+        }
+
+        private void Update()
+        {
+            if (!_hasController || _animator == null || _agent == null) return;
+            float speed = _agent.velocity.magnitude;
+            _animator.speed = speed > 0.1f ? speed / animationBaseSpeed : 1f;
         }
 
         private void HandleStateChanged(ZombieState previous, ZombieState current)

@@ -25,7 +25,7 @@ namespace HanziZombieDefense.Hanzi.Recognition
         /// <summary>Default per-metric thresholds, tuned for 32-sample unit-box space.</summary>
         public const float DefaultShapeThreshold = 0.35f;
         public const float DefaultEndpointThreshold = 0.4f;
-        public const float DefaultDirectionThreshold = 0.0f;
+        public const float DefaultDirectionThreshold = -0.5f;
 
         private readonly float _shapeThreshold;
         private readonly float _endpointThreshold;
@@ -59,6 +59,17 @@ namespace HanziZombieDefense.Hanzi.Recognition
             if (drawnNorm.Count != templateNorm.Count)
                 return RecognitionResult.Reject();
 
+            var resultForward = Evaluate(drawnNorm, templateNorm);
+
+            var templateReversed = new List<Vector2>(templateNorm);
+            templateReversed.Reverse();
+            var resultReversed = Evaluate(drawnNorm, templateReversed);
+
+            return resultForward.Confidence >= resultReversed.Confidence ? resultForward : resultReversed;
+        }
+
+        private RecognitionResult Evaluate(List<Vector2> drawnNorm, List<Vector2> templateNorm)
+        {
             float directionScore = ComputeDirectionScore(drawnNorm, templateNorm);
             float shapeDistance = ComputeShapeDistance(drawnNorm, templateNorm);
             float endpointDistance = ComputeEndpointDistance(drawnNorm, templateNorm);
