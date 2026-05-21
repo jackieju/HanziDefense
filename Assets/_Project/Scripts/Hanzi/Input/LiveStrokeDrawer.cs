@@ -9,6 +9,7 @@ namespace HanziZombieDefense.Hanzi.Input
     public sealed class LiveStrokeDrawer : MonoBehaviour
     {
         [SerializeField] private WritingCanvas writingCanvas;
+        [SerializeField] private WritingSession writingSession;
         [SerializeField] private float lineWidth = 8f;
         [SerializeField] private Color drawingColor = new Color(1f, 1f, 1f, 0.7f);
         [SerializeField] private Color matchedColor = new Color(0.2f, 1f, 0.4f, 1f);
@@ -24,6 +25,7 @@ namespace HanziZombieDefense.Hanzi.Input
         {
             _rect = GetComponent<RectTransform>();
             if (writingCanvas == null) writingCanvas = GetComponent<WritingCanvas>();
+            if (writingSession == null) writingSession = GetComponent<WritingSession>();
         }
 
         private void OnEnable()
@@ -60,6 +62,12 @@ namespace HanziZombieDefense.Hanzi.Input
 
         private void OnStrokeStarted(Vector2 point)
         {
+            if (writingSession != null && !writingSession.IsActive)
+            {
+                _currentStrokeParent = null;
+                return;
+            }
+
             _currentStrokeParent = new GameObject("LiveStroke");
             var rt = _currentStrokeParent.AddComponent<RectTransform>();
             rt.SetParent(_rect, false);

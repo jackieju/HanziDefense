@@ -20,11 +20,131 @@ namespace HanziZombieDefense.Editor
         private const string GraphicsUrl =
             "https://raw.githubusercontent.com/skishore/makemeahanzi/master/graphics.txt";
 
-        private const string StreamingAssetsRel = "Assets/_Project/StreamingAssets";
-        private const string GraphicsOutFolderRel = "Assets/_Project/StreamingAssets/Hanzi/graphics";
-        private const string IndexOutPathRel = "Assets/_Project/StreamingAssets/Hanzi/hanzi_index.json";
+        private const string StreamingAssetsRel = "Assets/StreamingAssets";
+        private const string GraphicsOutFolderRel = "Assets/StreamingAssets/Hanzi/graphics";
+        private const string IndexOutPathRel = "Assets/StreamingAssets/Hanzi/hanzi_index.json";
 
         // ─────────────────────────── Menu items ───────────────────────────
+
+        [MenuItem("Tools/Hanzi Zombie Defense/Rebuild Index from Character List")]
+        public static void RebuildIndexFromCharacterList()
+        {
+            string filterPath = EditorUtility.OpenFilePanel(
+                "Select character list file (e.g. my_list.txt)",
+                Application.dataPath,
+                "txt");
+
+            if (string.IsNullOrEmpty(filterPath))
+            {
+                Debug.Log("[HanziDataProcessor] Cancelled.");
+                return;
+            }
+
+            string filterContent = File.ReadAllText(filterPath, Encoding.UTF8);
+            var allowedChars = new HashSet<string>();
+            foreach (char c in filterContent)
+            {
+                if (!char.IsWhiteSpace(c) && !char.IsControl(c))
+                    allowedChars.Add(c.ToString());
+            }
+
+            string projectRoot = Path.GetDirectoryName(Application.dataPath);
+            string graphicsDir = Path.Combine(projectRoot, GraphicsOutFolderRel);
+            string indexOutPath = Path.Combine(projectRoot, IndexOutPathRel);
+
+            if (!Directory.Exists(graphicsDir))
+            {
+                Debug.LogError($"[HanziDataProcessor] Graphics folder not found: {graphicsDir}");
+                return;
+            }
+
+            var indexEntries = new List<IndexEntry>();
+            int scanned = 0;
+            var files = Directory.GetFiles(graphicsDir, "*.json");
+
+            foreach (string filePath in files)
+            {
+                scanned++;
+                if (scanned % 100 == 0)
+                {
+                    if (EditorUtility.DisplayCancelableProgressBar(
+                        "Rebuilding Hanzi Index",
+                        $"{scanned} / {files.Length}",
+                        (float)scanned / files.Length))
+                    {
+                        Debug.LogWarning("[HanziDataProcessor] Cancelled.");
+                        EditorUtility.ClearProgressBar();
+                        return;
+                    }
+                }
+
+                string json = File.ReadAllText(filePath, Encoding.UTF8);
+                if (!TryParseLine(json, out string character, out int strokeCount))
+                    continue;
+
+                if (!allowedChars.Contains(character))
+                    continue;
+
+                int hsk;
+                if (strokeCount <= 4) hsk = 1;
+                else if (strokeCount <= 7) hsk = 2;
+                else if (strokeCount <= 10) hsk = 3;
+                else if (strokeCount <= 13) hsk = 4;
+                else if (strokeCount <= 16) hsk = 5;
+                else hsk = 6;
+
+                indexEntries.Add(new IndexEntry
+                {
+                    character = character,
+                    hsk = hsk,
+                    strokes = strokeCount
+                });
+            }
+
+            EditorUtility.ClearProgressBar();
+
+            WriteIndexFile(indexOutPath, indexEntries);
+            AssetDatabase.Refresh();
+
+            Debug.Log($"[HanziDataProcessor] Rebuilt index with {indexEntries.Count} characters (filtered from {allowedChars.Count} in list, {files.Length} files scanned).");
+        }
+
+        [MenuItem("Tools/Hanzi Zombie Defense/Process Graphics Data (Filtered by Character List)")]
+        public static void ProcessGraphicsDataFilteredMenu()
+        {
+            string sourcePath = EditorUtility.OpenFilePanel(
+                "Select graphics.txt from Make Me a Hanzi",
+                "",
+                "txt");
+
+            if (string.IsNullOrEmpty(sourcePath))
+            {
+                Debug.Log("[HanziDataProcessor] Cancelled.");
+                return;
+            }
+
+            string filterPath = EditorUtility.OpenFilePanel(
+                "Select character list file (e.g. my_list.txt)",
+                Application.dataPath,
+                "txt");
+
+            if (string.IsNullOrEmpty(filterPath))
+            {
+                Debug.Log("[HanziDataProcessor] No filter file selected. Cancelled.");
+                return;
+            }
+
+            string filterContent = File.ReadAllText(filterPath, Encoding.UTF8);
+            var allowedChars = new HashSet<string>();
+            foreach (char c in filterContent)
+            {
+                if (!char.IsWhiteSpace(c) && !char.IsControl(c))
+                    allowedChars.Add(c.ToString());
+            }
+
+            Debug.Log($"[HanziDataProcessor] Filter loaded: {allowedChars.Count} characters from {Path.GetFileName(filterPath)}");
+            ProcessGraphicsFile(sourcePath, allowedChars);
+        }
 
         [MenuItem("Tools/Hanzi Zombie Defense/Process Graphics Data")]
         public static void ProcessGraphicsDataMenu()
@@ -88,7 +208,7 @@ namespace HanziZombieDefense.Editor
 
         // ─────────────────────────── Core processing ───────────────────────────
 
-        public static void ProcessGraphicsFile(string sourcePath)
+        public static void ProcessGraphicsFile(string sourcePath, HashSet<string> allowedCharacters = null)
         {
             if (!File.Exists(sourcePath))
             {
@@ -137,6 +257,9 @@ namespace HanziZombieDefense.Editor
                     }
 
                     if (!TryParseLine(line, out string character, out int strokeCount))
+                        continue;
+
+                    if (allowedCharacters != null && !allowedCharacters.Contains(character))
                         continue;
 
                     string codepoint = ToHexCodepoint(character);

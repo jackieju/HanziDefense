@@ -101,9 +101,27 @@ namespace HanziZombieDefense.Hanzi.Input
 
         private void Awake()
         {
-            _matcher = useMatcherDefaults
-                ? new ResampledPointMatcher()
-                : new ResampledPointMatcher(shapeThreshold, endpointThreshold, directionThreshold);
+            UpdateMatcher();
+        }
+
+        private void UpdateMatcher()
+        {
+            var mode = GameSettings.Instance != null
+                ? GameSettings.Instance.RecognitionMode
+                : RecognitionMode.StrokeType;
+
+            if (mode == RecognitionMode.ShapeMatch)
+            {
+                _matcher = useMatcherDefaults
+                    ? new ShapePointMatcher()
+                    : new ShapePointMatcher(shapeThreshold, endpointThreshold, directionThreshold);
+            }
+            else
+            {
+                _matcher = useMatcherDefaults
+                    ? new ResampledPointMatcher()
+                    : new ResampledPointMatcher(shapeThreshold, endpointThreshold, directionThreshold);
+            }
         }
 
         private void OnEnable()
@@ -222,7 +240,16 @@ namespace HanziZombieDefense.Hanzi.Input
 
         private void HandleStrokeEnded(List<Vector2> stroke)
         {
-            if (!_active || _character == null || stroke == null || stroke.Count < 2) return;
+            if (!_active || _character == null || stroke == null || stroke.Count < 2)
+            {
+                EventBus.Publish(new WritingEvents.StrokeRejected
+                {
+                    Character = _character?.Character ?? "",
+                    StrokeIndex = _currentStrokeIndex,
+                    Result = RecognitionResult.Reject()
+                });
+                return;
+            }
             if (_currentStrokeIndex >= _character.StrokeCount) return;
 
             var expected = _character.Strokes[_currentStrokeIndex];

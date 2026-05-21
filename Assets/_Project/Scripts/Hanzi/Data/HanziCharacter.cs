@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using HanziZombieDefense.Hanzi.Recognition;
 
 namespace HanziZombieDefense.Hanzi.Data
 {
@@ -21,6 +22,16 @@ namespace HanziZombieDefense.Hanzi.Data
 
         /// <summary>Total number of strokes — equivalent to <see cref="Strokes"/>.Count.</summary>
         public int StrokeCount => Strokes.Count;
+
+        public bool AllStrokesClassified
+        {
+            get
+            {
+                for (int i = 0; i < Strokes.Count; i++)
+                    if (Strokes[i].Type == StrokeType.Unknown) return false;
+                return true;
+            }
+        }
 
         /// <summary>
         /// Construct a character from its glyph and an ordered stroke list.

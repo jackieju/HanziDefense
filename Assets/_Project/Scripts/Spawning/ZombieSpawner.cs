@@ -88,13 +88,18 @@ namespace HanziZombieDefense.Spawning
 
             Zombie zombie = _pool.Get();
             zombie.transform.SetPositionAndRotation(point.GetSpawnPosition(), point.transform.rotation);
+            zombie.gameObject.SetActive(false);
 
             if (!string.IsNullOrEmpty(debugForceCharacter) && hanziDatabase != null)
             {
                 hanziDatabase.GetCharacterAsync(debugForceCharacter).ContinueWith(task =>
                 {
                     if (task.Result != null && zombie != null)
+                    {
                         zombie.AssignCharacter(task.Result);
+                        zombie.gameObject.SetActive(true);
+                        EventBus.Publish(new GameEvents.ZombieSpawned { zombie = zombie });
+                    }
                 }, System.Threading.Tasks.TaskScheduler.FromCurrentSynchronizationContext());
             }
             else if (hanziDatabase != null)
@@ -104,15 +109,18 @@ namespace HanziZombieDefense.Spawning
                     if (zombie != null && character != null)
                     {
                         zombie.AssignCharacter(character);
+                        zombie.gameObject.SetActive(true);
+                        EventBus.Publish(new GameEvents.ZombieSpawned { zombie = zombie });
                     }
                 });
             }
             else
             {
+                zombie.gameObject.SetActive(true);
+                EventBus.Publish(new GameEvents.ZombieSpawned { zombie = zombie });
                 Debug.LogWarning("[ZombieSpawner] No HanziDatabase available — zombie will spawn without a character.");
             }
 
-            EventBus.Publish(new GameEvents.ZombieSpawned { zombie = zombie });
             _activeCount++;
             return zombie;
         }

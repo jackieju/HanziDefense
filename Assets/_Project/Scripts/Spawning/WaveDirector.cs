@@ -15,11 +15,14 @@ namespace HanziZombieDefense.Spawning
     public sealed class WaveConfig
     {
         [SerializeField, Min(1)] private int zombieCount = 10;
-        [SerializeField, Min(0.05f)] private float spawnInterval = 1.5f;
+        [SerializeField, Min(0.05f)] private float startInterval = 2.5f;
+        [SerializeField, Min(0.05f)] private float endInterval = 1.0f;
         [SerializeField, Min(0f)] private float restTimeAfterWave = 5f;
 
         public int ZombieCount => zombieCount;
-        public float SpawnInterval => spawnInterval;
+        public float StartInterval => startInterval;
+        public float EndInterval => endInterval;
+        public float SpawnInterval => startInterval;
         public float RestTimeAfterWave => restTimeAfterWave;
     }
 
@@ -162,9 +165,11 @@ namespace HanziZombieDefense.Spawning
                 spawner.SpawnZombie(point, hsk, maxStrokes);
                 spawned++;
 
-                float interval = _difficulty != null
-                    ? _difficulty.EffectiveSpawnInterval
-                    : wave.SpawnInterval;
+                float t = wave.ZombieCount > 1 ? (float)spawned / (wave.ZombieCount - 1) : 1f;
+                float interval = Mathf.Lerp(wave.StartInterval, wave.EndInterval, t);
+
+                if (_difficulty != null)
+                    interval = Mathf.Min(interval, _difficulty.EffectiveSpawnInterval);
 
                 yield return new WaitForSeconds(interval);
             }
