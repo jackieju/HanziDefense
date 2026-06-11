@@ -60,8 +60,6 @@ crashlytics-build.properties
 # Packed Addressables
 /[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
 
-# TextMeshPro
-/[Aa]ssets/TextMesh*Pro/
 
 # IDE
 .idea/
