@@ -159,7 +159,7 @@ namespace HanziZombieDefense.Hanzi.Data
                     throw new FormatException("Malformed point pair (unterminated).");
 
                 ParseXYPair(json, pairOpen + 1, pairClose, out float x, out float y);
-                points.Add(new Vector2(x, HanziWriterCanvasSize - y));
+                points.Add(new Vector2(x, y));
 
                 cursor = pairClose + 1;
             }

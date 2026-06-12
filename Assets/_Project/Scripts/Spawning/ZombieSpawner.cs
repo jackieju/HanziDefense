@@ -71,7 +71,7 @@ namespace HanziZombieDefense.Spawning
         /// </summary>
         [Header("Debug")]
         [SerializeField, Tooltip("If set, all zombies spawn with this character instead of random. Clear for normal behavior.")]
-        private string debugForceCharacter = "";
+        private string debugForceCharacter = "么";
 
         public Zombie SpawnZombie(SpawnPoint point, int hskLevel, int maxStrokes)
         {

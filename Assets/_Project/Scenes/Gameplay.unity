@@ -5218,7 +5218,7 @@ MonoBehaviour:
   hanziDatabase: {fileID: 0}
   poolRoot: {fileID: 0}
   poolSize: 30
-  debugForceCharacter: 
+  debugForceCharacter: 么
 --- !u!4 &1935191030
 Transform:
   m_ObjectHideFlags: 0
