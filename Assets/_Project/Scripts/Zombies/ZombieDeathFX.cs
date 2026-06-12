@@ -52,6 +52,12 @@ namespace HanziZombieDefense.Zombies
         {
             Vector3 spawnPos = transform.position + Vector3.up * verticalOffset;
 
+            if (zombie != null && zombie.Label != null)
+                zombie.Label.gameObject.SetActive(false);
+
+            foreach (var r in GetComponentsInChildren<Renderer>())
+                r.enabled = false;
+
             if (ServiceLocator.TryGet<ExplosionPool>(out var explosions))
             {
                 explosions.SpawnExplosion(spawnPos);
